@@ -1,6 +1,7 @@
 export interface Story {
   title: string
   description: string
+  body?: string
   content?: string
   url?: string
   source?: string
@@ -8,6 +9,12 @@ export interface Story {
   publishedAt?: string
   topic?: string
   isAIGenerated?: boolean
+}
+
+export interface PreloadCache {
+  up?: Story[]
+  down?: Story[]
+  right?: Story[]
 }
 
 export type AppState = 'SEARCH' | 'VIEWING' | 'LOADING' | 'CHOOSING'

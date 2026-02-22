@@ -55,37 +55,29 @@ export default function StoryView({
     return () => window.removeEventListener('keydown', handler)
   }, [isInteractive, navigate])
 
-  // Touch/mouse swipe handlers
+  // Left/right swipes only — vertical is used for scrolling the article
   const swipeHandlers = useSwipeable({
-    onSwipedUp: () => navigate('up'),
-    onSwipedDown: () => navigate('down'),
     onSwipedRight: () => navigate('right'),
     onSwipedLeft: () => navigate('left'),
     swipeDuration: 500,
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-    delta: 50,
+    preventScrollOnSwipe: false,
+    trackMouse: false,
+    delta: 60,
   })
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return ''
     const d = new Date(dateStr)
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
   }
 
-  const bgStyle = story.imageUrl
-    ? { backgroundImage: `url(${story.imageUrl})` }
-    : {}
+  // Full readable text: prefer body, fall back to content, then description
+  const fullText = story.body || story.content || story.description || ''
 
   return (
-    <div
-      className={`story-view ${story.imageUrl ? 'has-image' : ''}`}
-      style={bgStyle}
-      {...swipeHandlers}
-    >
-      <div className="story-overlay" />
+    <div className="story-view" {...swipeHandlers}>
 
-      {/* Top bar */}
+      {/* Fixed header */}
       <div className="story-top-bar">
         <button
           className="back-to-search-btn"
@@ -94,42 +86,68 @@ export default function StoryView({
         >
           ⌕
         </button>
-        {story.isAIGenerated && (
-          <span className="ai-badge">AI Generated</span>
-        )}
-      </div>
-
-      {/* Story content */}
-      <div className="story-content">
-        <div className="story-meta">
+        <div className="story-masthead">
           {story.source && <span className="story-source">{story.source}</span>}
-          {story.publishedAt && (
-            <span className="story-date">{formatDate(story.publishedAt)}</span>
-          )}
+          {story.isAIGenerated && <span className="ai-badge">AI</span>}
         </div>
-
-        <h1 className="story-title">{story.title}</h1>
-
-        {story.description && (
-          <p className="story-description">{story.description}</p>
-        )}
-
-        {story.url && !story.isAIGenerated && (
-          <a
-            href={story.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="story-link"
-            onClick={e => e.stopPropagation()}
-          >
-            Read full article ↗
-          </a>
-        )}
       </div>
 
-      {/* Navigation hints */}
+      {/* Scrollable article body */}
+      <div className="story-scroll">
+        <article className="story-article">
+
+          {story.imageUrl && (
+            <div className="story-image-wrap">
+              <img
+                className="story-image"
+                src={story.imageUrl}
+                alt=""
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          <div className="story-meta">
+            {story.publishedAt && (
+              <span className="story-date">{formatDate(story.publishedAt)}</span>
+            )}
+            {story.topic && (
+              <span className="story-topic">{story.topic}</span>
+            )}
+          </div>
+
+          <h1 className="story-title">{story.title}</h1>
+
+          <div className="story-rule" />
+
+          <div className="story-body">
+            {fullText.split('\n').filter(p => p.trim()).map((para, i) => (
+              <p key={i}>{para}</p>
+            ))}
+          </div>
+
+          {story.url && !story.isAIGenerated && (
+            <a
+              href={story.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="story-link"
+              onClick={e => e.stopPropagation()}
+            >
+              Read original article ↗
+            </a>
+          )}
+        </article>
+      </div>
+
+      {/* Fixed navigation footer */}
       <div className="nav-hints">
-        <div className="nav-hint nav-hint-up" onClick={() => navigate('up')}>
+        <div
+          className="nav-hint nav-hint-up"
+          onClick={() => navigate('up')}
+          role="button"
+          tabIndex={0}
+        >
           <span className="nav-hint-arrow">↑</span>
           <span className="nav-hint-label">Bigger picture</span>
         </div>
@@ -138,6 +156,8 @@ export default function StoryView({
           <div
             className={`nav-hint nav-hint-left ${!canGoBack ? 'nav-hint-disabled' : ''}`}
             onClick={() => canGoBack && navigate('left')}
+            role="button"
+            tabIndex={canGoBack ? 0 : -1}
           >
             <span className="nav-hint-arrow">←</span>
             <span className="nav-hint-label">Back</span>
@@ -147,13 +167,23 @@ export default function StoryView({
             <div className="nav-dot active" />
           </div>
 
-          <div className="nav-hint nav-hint-right" onClick={() => navigate('right')}>
+          <div
+            className="nav-hint nav-hint-right"
+            onClick={() => navigate('right')}
+            role="button"
+            tabIndex={0}
+          >
             <span className="nav-hint-label">Alternative</span>
             <span className="nav-hint-arrow">→</span>
           </div>
         </div>
 
-        <div className="nav-hint nav-hint-down" onClick={() => navigate('down')}>
+        <div
+          className="nav-hint nav-hint-down"
+          onClick={() => navigate('down')}
+          role="button"
+          tabIndex={0}
+        >
           <span className="nav-hint-arrow">↓</span>
           <span className="nav-hint-label">Zoom in</span>
         </div>
