@@ -156,7 +156,7 @@ async function generateStoriesWithClaude(prompt, expectedCount) {
   const message = await anthropic.messages.create({
     model: 'claude-opus-4-6',
     max_tokens: 2000,
-    thinking: { type: 'adaptive' },
+    thinking: { type: 'enabled', budget_tokens: 5000 },
     messages: [{ role: 'user', content: prompt }],
   })
 
