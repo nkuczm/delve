@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     console.log('No NEWS_API_KEY — using Claude to generate starter stories')
     try {
       const stories = await generateStoriesWithClaude(
-        `Generate 5 current news stories about: "${query}". Make them realistic and informative.`,
+        `Generate 5 current news stories about: "${query}". Make them realistic and informative, with full article text.`,
         5
       )
       return res.json({ articles: stories, source: 'claude' })
@@ -33,7 +33,7 @@ export default async function handler(req, res) {
       // Fall back to Claude if NewsAPI fails
       console.warn('NewsAPI error:', data.message, '— falling back to Claude')
       const stories = await generateStoriesWithClaude(
-        `Generate 5 current news stories about: "${query}". Make them realistic and informative.`,
+        `Generate 5 current news stories about: "${query}". Make them realistic and informative, with full article text.`,
         5
       )
       return res.json({ articles: stories, source: 'claude' })
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
       .map(a => ({
         title: a.title,
         description: a.description,
+        body: a.content || a.description,
         content: a.content,
         url: a.url,
         source: a.source?.name,

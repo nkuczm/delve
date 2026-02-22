@@ -24,6 +24,7 @@ export async function generateStoriesWithClaude(prompt, expectedCount) {
     return stories.slice(0, expectedCount).map(s => ({
       title: s.title || 'Untitled',
       description: s.description || '',
+      body: s.body || s.description || '',
       source: s.source || 'AI Generated',
       topic: s.topic || '',
       isAIGenerated: true,
